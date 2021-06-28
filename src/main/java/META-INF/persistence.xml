@@ -21,7 +21,7 @@ http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
 				value="org.hibernate.dialect.PostgreSQL92Dialect" />
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.format_sql" value="true" />
-			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<property name="hibernate.hbm2ddl.auto" value="create" />
 			
 		</properties>
 	</persistence-unit>

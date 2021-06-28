@@ -1,7 +1,5 @@
 package br.com.qm.casa.saber.dao;
 
-import java.util.List;
-
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 
@@ -40,6 +38,24 @@ public class ProfessorDAO {
 		
 		return this.entityManager.find(Professor.class, codFuncionario);
 		
+	}
+	
+	public boolean aumentaSalarioProfessor(int codFuncionario) {
+		
+		Professor professor = this.entityManager.find(Professor.class, codFuncionario);
+		
+		if (professor == null) {
+			return false;
+		}
+		
+		professor.setSalario(professor.getSalario() * 1.5F);
+		
+		this.entityManager.getTransaction().begin();;
+		this.entityManager.merge(professor);
+		this.entityManager.getTransaction().commit();
+		
+		
+		return true;
 	}
 	
 //	public abstract List<Professor> listaProfessores();

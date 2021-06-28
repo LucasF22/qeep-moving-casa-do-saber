@@ -1,10 +1,14 @@
 package br.com.qm.casa.saber.entity;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 
 @Entity
 public class Professor {
@@ -37,6 +41,9 @@ public class Professor {
 	
 	@Column(nullable = false)
 	private String disciplina;
+	
+	@OneToMany(mappedBy = "professor")
+	private List<Turma> turmas;
 
 	public Professor(String nome, String telefone, String nivelGraduacao, float salario,
 			String disciplina) {

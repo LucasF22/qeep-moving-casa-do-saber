@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
+import javax.persistence.Query;
+
 import br.com.qm.casa.saber.entity.Aluno;
 import br.com.qm.casa.saber.entity.Professor;
 import br.com.qm.casa.saber.entity.Turma;
@@ -28,21 +32,17 @@ public class TurmaDAO {
 //	- listar as turmas (mostrar somente código e sala) 
 //	- e excluir uma turma. 
 
-	private Map<Integer, Turma> turmas;
+	private EntityManager entityManager;
 	private ProfessorDAO professorDao;
 	private AlunoDAO alunoDao;
 
 	public TurmaDAO(AlunoDAO alunoDao, ProfessorDAO professorDao) {
-		this.turmas = new HashMap<Integer, Turma>();
+		this.entityManager = Persistence.createEntityManagerFactory("casaDoSaber").createEntityManager();
 		this.professorDao = professorDao;
 		this.alunoDao = alunoDao;
 	}
 
 	public boolean cadastrarTurma(Turma turma) {
-		
-		if (this.turmas.get(turma.getCodTurma()) != null) {
-			return false; // turma já existe
-		}
 		
 		if (turma.getProfessor() != null) {
 			return false; // professor já cadastrado não pode
@@ -52,14 +52,22 @@ public class TurmaDAO {
 			return false; // também não podem haver alunos cadastrados
 		}
 		
-		this.turmas.put(turma.getCodTurma(), turma);
+		Turma turmaDb = entityManager.find(Turma.class, turma.getCodTurma());
+		
+		if (turmaDb != null) {
+			return false; // turma já existe
+		}
+		
+		this.entityManager.getTransaction().begin();
+		this.entityManager.persist(turma);
+		this.entityManager.getTransaction().commit();
 		
 		return true;
 	}
 	
 	public boolean adicionaProfessor(int codProfessor, int codTurma) {
 		
-		Turma turma = this.turmas.get(codTurma);
+		Turma turma = entityManager.find(Turma.class, codTurma);
 		
 		if (turma == null) {
 			return false; //turma não existe
@@ -80,12 +88,20 @@ public class TurmaDAO {
 		//Adiciona o professor à turma
 		turma.setProfessor(professorAdicionado);
 		
+		this.entityManager.getTransaction().begin();
+		this.entityManager.merge(turma);
+		this.entityManager.getTransaction().commit();
+		
 		return true;
+	}
+	
+	public Turma consultaTurma(int codTurma) {
+		return this.entityManager.find(Turma.class, codTurma);
 	}
 	
 	public boolean adicionaAluno(int matricula, int codTurma) {
 		
-		Turma turma = this.turmas.get(codTurma);
+		Turma turma = entityManager.find(Turma.class, codTurma);
 		
 		if (turma == null) {
 			return false; //turma não existe
@@ -115,28 +131,39 @@ public class TurmaDAO {
 		}
 		
 		turma.getAlunos().add(alunoAdicionado);
+		
+		this.entityManager.getTransaction().begin();
+		this.entityManager.merge(turma);
+		this.entityManager.getTransaction().commit();
+		
 		return true;
 	}
 	
 	public List<Turma> listaTurmas() {
 		
-		return (List<Turma>) this.turmas.values();
+		Query query = this.entityManager.createQuery("select t from Turma as t");
+		
+		return (List<Turma>) query.getResultList();
 		
 	}
 	
 	public boolean removeTurma(int codTurma) {
 		
-		if (this.turmas.get(codTurma) == null) {
+		Turma turma = entityManager.find(Turma.class, codTurma);
+		
+		if (turma == null) {
 			return false; // turma não existe
 		}
 		
-		this.turmas.remove(codTurma);
+		entityManager.getTransaction().begin();
+		entityManager.remove(turma);
+		entityManager.getTransaction().commit();
 		return true;
 	}
 	
 	public boolean listaDeChamada(int codTurma) {
 		
-		Turma turma = this.turmas.get(codTurma);
+		Turma turma = entityManager.find(Turma.class, codTurma);
 		
 		if (turma == null) {
 			return false; // turma não existe
@@ -150,7 +177,7 @@ public class TurmaDAO {
 		
 		
 		try {
-			FileWriter fw = new FileWriter("chamada_" + turma.getCodTurma() + turma.getSala());
+			FileWriter fw = new FileWriter("chamada_" + turma.getCodTurma());
 			
 //			Turma XPTO Sala X
 //			Professor: <Nome do Professor>

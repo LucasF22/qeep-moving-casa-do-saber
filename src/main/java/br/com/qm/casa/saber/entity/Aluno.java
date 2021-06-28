@@ -1,12 +1,14 @@
 package br.com.qm.casa.saber.entity;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
 @Entity
 public class Aluno {
@@ -33,6 +35,9 @@ public class Aluno {
 	
 	@Column(name = "data_promocao")
 	private LocalDate dataPromocao;
+	
+	@ManyToMany(mappedBy = "alunos")
+	private List<Turma> turmas;
 
 	public Aluno(String nome, int serie, LocalDate dataNascimento, LocalDate dataPromocao) {
 		this.nome = nome;
